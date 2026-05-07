@@ -1,11 +1,11 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { AppError, InternalServerError } from "../utils/errors";
+import { AppError } from "../utils/errors";
 import { Prisma } from "generated/prisma";
 
 /**
  * Global error handler for Fastify
  */
-export function setupErrorHandler(app: any): void {
+export function setupErrorHandler(app: FastifyInstance): void {
   app.setErrorHandler(
     async (error: unknown, request: FastifyRequest, reply: FastifyReply) => {
       const requestId = request.id;

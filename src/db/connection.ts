@@ -5,8 +5,7 @@ import { prisma } from "./prisma";
  */
 export async function initializeDatabase(): Promise<void> {
   try {
-    // Test the connection
-    await prisma.$queryRaw`SELECT 1`;
+    await prisma.$connect();
     console.log("✅ Database connection established");
   } catch (error) {
     console.error("❌ Database connection failed:", error);

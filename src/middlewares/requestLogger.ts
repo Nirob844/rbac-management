@@ -9,12 +9,12 @@ declare module "fastify" {
 /**
  * Setup request logging middleware
  */
-export async function setupRequestLogger(app: any): Promise<void> {
-  app.addHook("onRequest", async (request: any, reply: any) => {
+export function setupRequestLogger(app: FastifyInstance): void {
+  app.addHook("onRequest", async (request) => {
     request.startTime = Date.now();
   });
 
-  app.addHook("onResponse", async (request: any, reply: any) => {
+  app.addHook("onResponse", async (request, reply) => {
     const duration = Date.now() - (request.startTime as number);
     const logLevel = reply.statusCode >= 400 ? "warn" : "info";
 
