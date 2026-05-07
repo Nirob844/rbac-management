@@ -17,6 +17,9 @@ const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().default("15m"),
   REFRESH_TOKEN_SECRET: z.string().min(1, "REFRESH_TOKEN_SECRET is required"),
   REFRESH_TOKEN_EXPIRES_IN: z.string().default("7d"),
+  DEFAULT_ADMIN_EMAIL: z.string().email().default("admin@rbac.local"),
+  DEFAULT_ADMIN_USERNAME: z.string().min(3).max(20).default("admin"),
+  DEFAULT_ADMIN_PASSWORD: z.string().min(8).default("Admin@12345"),
 });
 
 const env = envSchema.parse(process.env);
@@ -31,4 +34,7 @@ export const config = {
   jwtExpiresIn: env.JWT_EXPIRES_IN,
   refreshSecret: env.REFRESH_TOKEN_SECRET,
   refreshExpiresIn: env.REFRESH_TOKEN_EXPIRES_IN,
+  defaultAdminEmail: env.DEFAULT_ADMIN_EMAIL,
+  defaultAdminUsername: env.DEFAULT_ADMIN_USERNAME,
+  defaultAdminPassword: env.DEFAULT_ADMIN_PASSWORD,
 } as const;

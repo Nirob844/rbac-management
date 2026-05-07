@@ -1,13 +1,15 @@
 import { buildApp } from "./app";
 import { config } from "./config/env";
 import { closeDatabase, initializeDatabase } from "./db/connection";
+import { bootstrapDefaultAdmin } from "./db/bootstrap";
 
 const app = buildApp();
 
 async function start(): Promise<void> {
   try {
-    console.log("🔌 Connecting to database...");
     await initializeDatabase();
+    
+    await bootstrapDefaultAdmin();
 
     console.log("🚀 Starting server...");
     await app.listen({ host: config.host, port: config.port });

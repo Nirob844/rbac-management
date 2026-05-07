@@ -1,6 +1,8 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { AppError } from "../utils/errors";
 import { Prisma } from "generated/prisma";
+import { errorResponse } from "../utils/response";
+import { ZodError } from "zod";
 
 /**
  * Global error handler for Fastify
@@ -15,46 +17,65 @@ export function setupErrorHandler(app: FastifyInstance): void {
         console.error(`[${requestId}] Prisma error:`, error.code);
         switch (error.code) {
           case "P2002":
-            return reply.code(409).send({
-              success: false,
-              message: "Unique constraint violation",
-              error: "CONFLICT",
-              details: error.meta,
-              requestId,
-            });
+            return reply
+              .code(409)
+              .send(
+                errorResponse(
+                  "Unique constraint violation",
+                  "CONFLICT",
+                  error.meta,
+                  requestId,
+                ),
+              );
           case "P2025":
-            return reply.code(404).send({
-              success: false,
-              message: "Record not found",
-              error: "NOT_FOUND",
-              requestId,
-            });
+            return reply
+              .code(404)
+              .send(
+                errorResponse(
+                  "Record not found",
+                  "NOT_FOUND",
+                  undefined,
+                  requestId,
+                ),
+              );
           case "P2003":
-            return reply.code(400).send({
-              success: false,
-              message: "Foreign key constraint failed",
-              error: "INVALID_REFERENCE",
-              requestId,
-            });
+            return reply
+              .code(400)
+              .send(
+                errorResponse(
+                  "Foreign key constraint failed",
+                  "INVALID_REFERENCE",
+                  undefined,
+                  requestId,
+                ),
+              );
           default:
-            return reply.code(500).send({
-              success: false,
-              message: "Database error",
-              error: "DATABASE_ERROR",
-              requestId,
-            });
+            return reply
+              .code(500)
+              .send(
+                errorResponse(
+                  "Database error",
+                  "DATABASE_ERROR",
+                  undefined,
+                  requestId,
+                ),
+              );
         }
       }
 
       // Handle Prisma validation errors
       if (error instanceof Prisma.PrismaClientValidationError) {
         console.error(`[${requestId}] Prisma validation error:`, error.message);
-        return reply.code(400).send({
-          success: false,
-          message: "Invalid data provided",
-          error: "VALIDATION_ERROR",
-          requestId,
-        });
+        return reply
+          .code(400)
+          .send(
+            errorResponse(
+              "Invalid data provided",
+              "VALIDATION_ERROR",
+              { message: error.message },
+              requestId,
+            ),
+          );
       }
 
       // Handle custom AppError
@@ -63,37 +84,69 @@ export function setupErrorHandler(app: FastifyInstance): void {
           `[${requestId}] App error (${error.statusCode}):`,
           error.message,
         );
-        return reply.code(error.statusCode).send({
-          success: false,
-          message: error.message,
-          error: error.constructor.name,
-          details: error.details,
-          requestId,
-        });
+        return reply
+          .code(error.statusCode)
+          .send(
+            errorResponse(
+              error.message,
+              error.constructor.name,
+              error.details,
+              requestId,
+            ),
+          );
+      }
+
+      // Handle Zod validation errors
+      if (error instanceof ZodError) {
+        const fields = error.issues.map((issue) => ({
+          path: issue.path.join("."),
+          message: issue.message,
+          code: issue.code,
+        }));
+
+        return reply
+          .code(400)
+          .send(
+            errorResponse(
+              "Validation failed",
+              "VALIDATION_ERROR",
+              { fields },
+              requestId,
+            ),
+          );
       }
 
       // Handle general errors
       if (error instanceof Error) {
         console.error(`[${requestId}] Unexpected error:`, error.message);
-        return reply.code(500).send({
-          success: false,
-          message:
-            process.env.NODE_ENV === "production"
-              ? "Internal server error"
-              : error.message,
-          error: "INTERNAL_SERVER_ERROR",
-          requestId,
-        });
+        const message =
+          process.env.NODE_ENV === "production"
+            ? "Internal server error"
+            : error.message;
+        return reply
+          .code(500)
+          .send(
+            errorResponse(
+              message,
+              "INTERNAL_SERVER_ERROR",
+              undefined,
+              requestId,
+            ),
+          );
       }
 
       // Handle unknown errors
       console.error(`[${requestId}] Unknown error:`, error);
-      return reply.code(500).send({
-        success: false,
-        message: "Internal server error",
-        error: "UNKNOWN_ERROR",
-        requestId,
-      });
+      return reply
+        .code(500)
+        .send(
+          errorResponse(
+            "Internal server error",
+            "UNKNOWN_ERROR",
+            undefined,
+            requestId,
+          ),
+        );
     },
   );
 }

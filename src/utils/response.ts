@@ -16,6 +16,7 @@ export interface ErrorResponse {
   message: string;
   error: string;
   details?: unknown;
+  requestId?: string;
   timestamp: string;
 }
 
@@ -41,12 +42,14 @@ export function errorResponse(
   message: string,
   error: string,
   details?: unknown,
+  requestId?: string,
 ): ErrorResponse {
   return {
     success: false,
     message,
     error,
     details,
+    requestId,
     timestamp: new Date().toISOString(),
   };
 }
