@@ -36,6 +36,18 @@ export const registerHealthRoutes: FastifyPluginAsync = async (app) => {
       timestamp: new Date().toISOString(),
     };
   });
+  app.get("/sazzad", async () => {
+    return {
+      success: true,
+      message: "RBAC server is running 🚀",
+      data: {
+        name: "Sazzad",
+        age: 24,
+        profession: "Software Engineer",
+      },
+      timestamp: new Date().toISOString(),
+    };
+  });
 
   // Detailed health check with database status
   app.get("/health/detailed", async (_request, reply) => {
