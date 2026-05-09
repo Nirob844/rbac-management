@@ -7,9 +7,6 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": ".",
-    "paths": {
-      "generated/prisma": ["src/generated/prisma"]
-    },
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
