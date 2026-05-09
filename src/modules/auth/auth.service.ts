@@ -64,7 +64,7 @@ export const loginUser = async (input: LoginInput) => {
     if (!user.isActive) throw new AuthError("Account is disabled");
 
     // Build roles and payload
-    const roles = user.userRoles.map((ur) => ur.role.name);
+    const roles = user.userRoles.map((ur: any) => ur.role.name);
     const payload = { userId: user.id, email: user.email, roles };
 
     // Generate tokens
@@ -101,7 +101,7 @@ export const refreshTokens = async (token: string) => {
     if (!user || user.refreshToken !== token)
       throw new AuthError("Invalid refresh token");
 
-    const roles = user.userRoles.map((ur) => ur.role.name);
+    const roles = user.userRoles.map((ur: any) => ur.role.name);
     const newPayload = { userId: user.id, email: user.email, roles };
 
     const accessToken = generateAccessToken(newPayload);

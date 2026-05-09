@@ -14,8 +14,9 @@ export function setupErrorHandler(app: FastifyInstance): void {
 
       // Handle Prisma errors
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        console.error(`[${requestId}] Prisma error:`, error.code);
-        switch (error.code) {
+        const prismaError = error as Prisma.PrismaClientKnownRequestError;
+        console.error(`[${requestId}] Prisma error:`, prismaError.code);
+        switch (prismaError.code) {
           case "P2002":
             return reply
               .code(409)
@@ -23,7 +24,7 @@ export function setupErrorHandler(app: FastifyInstance): void {
                 errorResponse(
                   "Unique constraint violation",
                   "CONFLICT",
-                  error.meta,
+                  prismaError.meta,
                   requestId,
                 ),
               );
@@ -65,14 +66,18 @@ export function setupErrorHandler(app: FastifyInstance): void {
 
       // Handle Prisma validation errors
       if (error instanceof Prisma.PrismaClientValidationError) {
-        console.error(`[${requestId}] Prisma validation error:`, error.message);
+        const validationError = error as Error;
+        console.error(
+          `[${requestId}] Prisma validation error:`,
+          validationError.message,
+        );
         return reply
           .code(400)
           .send(
             errorResponse(
               "Invalid data provided",
               "VALIDATION_ERROR",
-              { message: error.message },
+              { message: validationError.message },
               requestId,
             ),
           );

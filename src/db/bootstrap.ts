@@ -19,7 +19,7 @@ export async function bootstrapDefaultAdmin(): Promise<void> {
 
   const password = await hashPassword(config.defaultAdminPassword);
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: any) => {
     const adminRole = await tx.role.upsert({
       where: { name: "admin" },
       update: {},
